@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  webserver:
+    image: php:7.4-apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./site:/var/www/html
+    depends_on:
+      - database
+
+  database:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: Meto0806
+      MYSQL_DATABASE: BIBYdex
+      MYSQL_USER: paugetc
+      MYSQL_PASSWORD: Meto0806
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "8181:80"
+    depends_on:
+      - database
