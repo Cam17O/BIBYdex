@@ -14,10 +14,10 @@ try {
     die('Erreur : ' . $e->getMessage());
 }
 
-// // test select *
+// test select *
 
-// $select = $db->query('SELECT * FROM `Utilisateur`');
+$select = $db->query('SELECT * FROM `Utilisateur`');
 
-// // appeler les données de la base de données
-// $donnees = $select->fetch();
-// print_r($donnees);
+// appeler les données de la base de données
+$donnees = $select->fetch();
+print_r($donnees);

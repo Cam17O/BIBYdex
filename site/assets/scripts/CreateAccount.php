@@ -8,7 +8,6 @@
     header("Content-Type:application/json");
     //ceci signifie que le format du corps de la requête est JSON
 
-
     require("assets/db/connexionDB.php");
 
     $stmt = $pdo->prepare("INSERT INTO `Utilisateur`(`id_utilisateur`, `email`, `Name`, `password`) VALUES ('email=:email','Name=:Name','password=:password')");
