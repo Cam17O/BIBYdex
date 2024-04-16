@@ -1,7 +1,7 @@
 <?php
 
 // Connexion à la base de données
-$servername = 'localhost';
+$servername = 'database';
 $dbname = 'BIBYdex';
 $username = 'paugetc';
 $password = 'Capa1677';

@@ -19,7 +19,7 @@ services:
   database:
     image: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: Meto0806
       MYSQL_DATABASE: BIBYdex
       MYSQL_USER: paugetc
       MYSQL_PASSWORD: Capa1677
@@ -28,7 +28,7 @@ services:
     image: phpmyadmin/phpmyadmin
     environment:
       PMA_HOST: database
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: Meto0806
     ports:
       - "8181:80"
     depends_on:
