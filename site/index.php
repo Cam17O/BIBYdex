@@ -13,11 +13,11 @@
     <!--Menu-->
     <ul id="menu">
         <li><a target="_blank" href="index.php" data-text="Accueil">Accueil</li>
-        <li><a target="_blank" href="#" data-text="Ma galerie">Ma galerie</li>
-        <li><a target="_blank" href="#" data-text="Liste des utilisateurs">Liste des utilisateurs</li>
+        <li><a target="_blank" href="galerie.php" data-text="Ma galerie">Ma galerie</li>
+        <li><a target="_blank" href="allUser.php" data-text="Liste des utilisateurs">Liste des utilisateurs</li>
         <li><a target="_blank" href="login.php" data-text="Connexion">Se connecter</li>
         <li><a target="_blank" href="CreateAccount.php" data-text="Créer un compte">Créer un compte</li>
-        <li><a target="_blank" href="#" data-text="Déconnexion">Se déconnecter</li>
+        <li><a target="_blank" href="logout.php" data-text="Déconnexion">Se déconnecter</li>
     </ul>
     <!--Fin Menu-->
 

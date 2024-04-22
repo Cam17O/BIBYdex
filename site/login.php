@@ -32,7 +32,7 @@ session_start();
             <div class=" card-body">
 
                 <!-- formulaire  de connexion -->
-                <form action="assets/scripts/login.php" method="post">
+                <form action="/assets/db/login.php" method="post">
 
 
                     <!-- pseudo -->
