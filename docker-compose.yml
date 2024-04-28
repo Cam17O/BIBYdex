@@ -1,8 +1,10 @@
-version: '3.3'
+version: '3.8'
 
 services:
   webserver:
-    image: php:7.4-apache
+    build:
+      context: .
+      dockerfile: Dockerfile.php
     ports:
       - "8080:80"
     volumes:
@@ -15,7 +17,6 @@ services:
       - MYSQL_USER=paugetc
       - MYSQL_PASSWORD=Capa1677
       - MYSQL_DATABASE=BIBYdex
-    command: /bin/bash -c "if [ ! -f /var/www/html/.initialized ]; then docker-php-ext-install pdo_mysql && touch /var/www/html/.initialized; fi && apache2-foreground"
     restart: always
 
   database:
@@ -41,9 +42,8 @@ services:
   nodejs:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.nodejs
     ports:
       - "3000:3000"
     depends_on:
       - database
-    command: sh -c "npm install && node app.js"
