@@ -1,12 +1,12 @@
 const express = require('express');
-const mysql = require('mysql');
 const bodyParser = require('body-parser');
+const mysql = require('mysql2');
 
-// Créer une application Express
+// Initialize Express app
 const app = express();
-const port = 3000;
+app.use(bodyParser.json());
 
-// Configuration de la connexion à la base de données
+// Create MySQL connection
 const connection = mysql.createConnection({
     host: 'database',
     user: 'paugetc',
@@ -14,19 +14,12 @@ const connection = mysql.createConnection({
     database: 'BIBYdex'
 });
 
-// Connecter la base de données
 connection.connect(err => {
     if (err) throw err;
-    console.log('Connecté à la base de données MySQL');
+    console.log('Connected to the database');
 });
 
-// Utiliser bodyParser pour analyser le corps des requêtes HTTP
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Définir les endpoints pour l'API
-//------------------------------utilisateur------------------------------//
-// Récupérer tous les utilisateurs
+// Routes to get all and one item from each table
 app.get('/utilisateurs', (req, res) => {
     connection.query('SELECT * FROM Utilisateur', (err, result) => {
         if (err) throw err;
@@ -34,44 +27,14 @@ app.get('/utilisateurs', (req, res) => {
     });
 });
 
-// Récupérer un utilisateur par son ID
 app.get('/utilisateur/:id', (req, res) => {
-    const userId = req.params.id;
-    connection.query('SELECT * FROM Utilisateur WHERE id_utilisateur = ?', userId, (err, result) => {
+    const { id } = req.params;
+    connection.query('SELECT * FROM Utilisateur WHERE id_utilisateur = ?', [id], (err, result) => {
         if (err) throw err;
         res.json(result[0]);
     });
 });
 
-// Ajouter un nouvel utilisateur
-app.post('/utilisateur', (req, res) => {
-    const newUser = req.body;
-    connection.query('INSERT INTO Utilisateur SET ?', newUser, (err, result) => {
-        if (err) throw err;
-        res.send('Utilisateur ajouté avec succès');
-    });
-});
-
-// Mettre à jour un utilisateur par son ID
-app.put('/utilisateur/:id', (req, res) => {
-    const userId = req.params.id;
-    const updatedUser = req.body;
-    connection.query('UPDATE Utilisateur SET ? WHERE id_utilisateur = ?', [updatedUser, userId], (err, result) => {
-        if (err) throw err;
-        res.send('Utilisateur mis à jour avec succès');
-    });
-});
-
-// Supprimer un utilisateur par son ID
-app.delete('/utilisateur/:id', (req, res) => {
-    const userId = req.params.id;
-    connection.query('DELETE FROM Utilisateur WHERE id_utilisateur = ?', userId, (err, result) => {
-        if (err) throw err;
-        res.send('Utilisateur supprimé avec succès');
-    });
-});
-//------------------------------galerie------------------------------//
-// Récupérer toutes les galeries
 app.get('/galeries', (req, res) => {
     connection.query('SELECT * FROM Galerie', (err, result) => {
         if (err) throw err;
@@ -79,45 +42,14 @@ app.get('/galeries', (req, res) => {
     });
 });
 
-// Récupérer une galerie par son ID
 app.get('/galerie/:id', (req, res) => {
-    const galleryId = req.params.id;
-    connection.query('SELECT * FROM Galerie WHERE id_galerie = ?', galleryId, (err, result) => {
+    const { id } = req.params;
+    connection.query('SELECT * FROM Galerie WHERE id_galerie = ?', [id], (err, result) => {
         if (err) throw err;
         res.json(result[0]);
     });
 });
 
-// Ajouter une nouvelle galerie
-app.post('/galerie', (req, res) => {
-    const newGallery = req.body;
-    connection.query('INSERT INTO Galerie SET ?', newGallery, (err, result) => {
-        if (err) throw err;
-        res.send('Galerie ajoutée avec succès');
-    });
-});
-
-// Mettre à jour une galerie par son ID
-app.put('/galerie/:id', (req, res) => {
-    const galleryId = req.params.id;
-    const updatedGallery = req.body;
-    connection.query('UPDATE Galerie SET ? WHERE id_galerie = ?', [updatedGallery, galleryId], (err, result) => {
-        if (err) throw err;
-        res.send('Galerie mise à jour avec succès');
-    });
-});
-
-// Supprimer une galerie par son ID
-app.delete('/galerie/:id', (req, res) => {
-    const galleryId = req.params.id;
-    connection.query('DELETE FROM Galerie WHERE id_galerie = ?', galleryId, (err, result) => {
-        if (err) throw err;
-        res.send('Galerie supprimée avec succès');
-    });
-});
-
-//------------------------------photo------------------------------//
-// Récupérer toutes les photos
 app.get('/photos', (req, res) => {
     connection.query('SELECT * FROM Photo', (err, result) => {
         if (err) throw err;
@@ -125,74 +57,96 @@ app.get('/photos', (req, res) => {
     });
 });
 
-// Récupérer une photo par son ID
 app.get('/photo/:id', (req, res) => {
-    const photoId = req.params.id;
-    connection.query('SELECT * FROM Photo WHERE id_photo = ?', photoId, (err, result) => {
+    const { id } = req.params;
+    connection.query('SELECT * FROM Photo WHERE id_photo = ?', [id], (err, result) => {
         if (err) throw err;
         res.json(result[0]);
     });
 });
 
-// Ajouter une nouvelle photo
-app.post('/photo', (req, res) => {
-    const newPhoto = req.body;
-    connection.query('INSERT INTO Photo SET ?', newPhoto, (err, result) => {
-        if (err) throw err;
-        res.send('Photo ajoutée avec succès');
-    });
-});
-
-// Mettre à jour une photo par son ID
-app.put('/photo/:id', (req, res) => {
-    const photoId = req.params.id;
-    const updatedPhoto = req.body;
-    connection.query('UPDATE Photo SET ? WHERE id_photo = ?', [updatedPhoto, photoId], (err, result) => {
-        if (err) throw err;
-        res.send('Photo mise à jour avec succès');
-    });
-});
-
-// Supprimer une photo par son ID
-app.delete('/photo/:id', (req, res) => {
-    const photoId = req.params.id;
-    connection.query('DELETE FROM Photo WHERE id_photo = ?', photoId, (err, result) => {
-        if (err) throw err;
-        res.send('Photo supprimée avec succès');
-    });
-});
-
-//------------------------------amis------------------------------//
-// Récupérer tous les amis d'un utilisateur
-app.get('/amis/:id_utilisateur', (req, res) => {
-    const userId = req.params.id_utilisateur;
-    connection.query('SELECT * FROM Amis WHERE id_utilisateur = ?', userId, (err, result) => {
+app.get('/amis', (req, res) => {
+    connection.query('SELECT * FROM Amis', (err, result) => {
         if (err) throw err;
         res.json(result);
     });
 });
 
-// Ajouter une nouvelle relation d'amitié
+app.get('/amis/:id', (req, res) => {
+    const { id } = req.params;
+    connection.query('SELECT * FROM Amis WHERE id_utilisateur = ?', [id], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+// Routes to add an item to each table
+app.post('/utilisateur', (req, res) => {
+    const { email, Name, password } = req.body;
+    connection.query('INSERT INTO Utilisateur (email, Name, password) VALUES (?, ?, ?)', [email, Name, password], (err, result) => {
+        if (err) throw err;
+        res.json({ id_utilisateur: result.insertId, email, Name, password });
+    });
+});
+
+app.post('/galerie', (req, res) => {
+    const { id_utilisateur } = req.body;
+    connection.query('INSERT INTO Galerie (id_utilisateur) VALUES (?)', [id_utilisateur], (err, result) => {
+        if (err) throw err;
+        res.json({ id_galerie: result.insertId, id_utilisateur });
+    });
+});
+
+app.post('/photo', (req, res) => {
+    const { id_utilisateur, id_galerie, photo_data } = req.body;
+    connection.query('INSERT INTO Photo (id_utilisateur, id_galerie, photo_data) VALUES (?, ?, ?)', [id_utilisateur, id_galerie, photo_data], (err, result) => {
+        if (err) throw err;
+        res.json({ id_photo: result.insertId, id_utilisateur, id_galerie, photo_data });
+    });
+});
+
 app.post('/amis', (req, res) => {
-    const newFriendship = req.body;
-    connection.query('INSERT INTO Amis SET ?', newFriendship, (err, result) => {
+    const { id_utilisateur, id_ami } = req.body;
+    connection.query('INSERT INTO Amis (id_utilisateur, id_ami) VALUES (?, ?)', [id_utilisateur, id_ami], (err, result) => {
         if (err) throw err;
-        res.send('Relation d\'amitié ajoutée avec succès');
+        res.json({ id_utilisateur, id_ami });
     });
 });
 
-// Supprimer une relation d'amitié entre deux utilisateurs
+// Routes to delete an item from each table
+app.delete('/utilisateur/:id', (req, res) => {
+    const { id } = req.params;
+    connection.query('DELETE FROM Utilisateur WHERE id_utilisateur = ?', [id], (err, result) => {
+        if (err) throw err;
+        res.sendStatus(204);
+    });
+});
+
+app.delete('/galerie/:id', (req, res) => {
+    const { id } = req.params;
+    connection.query('DELETE FROM Galerie WHERE id_galerie = ?', [id], (err, result) => {
+        if (err) throw err;
+        res.sendStatus(204);
+    });
+});
+
+app.delete('/photo/:id', (req, res) => {
+    const { id } = req.params;
+    connection.query('DELETE FROM Photo WHERE id_photo = ?', [id], (err, result) => {
+        if (err) throw err;
+        res.sendStatus(204);
+    });
+});
+
 app.delete('/amis/:id_utilisateur/:id_ami', (req, res) => {
-    const userId = req.params.id_utilisateur;
-    const friendId = req.params.id_ami;
-    connection.query('DELETE FROM Amis WHERE id_utilisateur = ? AND id_ami = ?', [userId, friendId], (err, result) => {
+    const { id_utilisateur, id_ami } = req.params;
+    connection.query('DELETE FROM Amis WHERE id_utilisateur = ? AND id_ami = ?', [id_utilisateur, id_ami], (err, result) => {
         if (err) throw err;
-        res.send('Relation d\'amitié supprimée avec succès');
+        res.sendStatus(204);
     });
 });
 
-
-// Démarrer le serveur
-app.listen(port, () => {
-    console.log(`Serveur en cours d'exécution sur le port ${port}`);
+// Start server
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
