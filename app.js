@@ -11,10 +11,10 @@ const upload = multer({ storage: storage });
 
 // Configurer la connexion à la base de données
 const db = mysql.createConnection({
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
+    host: 'database',
+    user: 'paugetc',
+    password: 'Capa1677',
+    database: 'BIBYdex'
 });
 
 db.connect((err) => {
