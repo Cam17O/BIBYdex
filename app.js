@@ -1,4 +1,3 @@
-// app.js
 const express = require('express');
 const multer = require('multer');
 const mysql = require('mysql2');
@@ -18,15 +17,11 @@ const db = mysql.createConnection({
     database: process.env.MYSQL_DATABASE
 });
 
-const connection = mysql.createConnection({
-    host: 'database',
-    user: 'paugetc',
-    password: 'Capa1677',
-    database: 'BIBYdex'
-});
-
 db.connect((err) => {
-    if (err) throw err;
+    if (err) {
+        console.error('Error connecting to the database:', err);
+        process.exit(1);
+    }
     console.log('Connected to MySQL database');
 });
 
