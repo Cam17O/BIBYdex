@@ -1,15 +1,19 @@
 <?php
+
 require __DIR__ . '/vendor/autoload.php';
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
+use Slim\Psr7\Factory\ResponseFactory; // Importer ResponseFactory
 
+// Créer l'application Slim
 $app = AppFactory::create();
 
-// Middleware for parsing JSON request bodies
+// Middleware pour analyser les corps de requête JSON
 $app->addBodyParsingMiddleware();
 
+// Définir les services dans le conteneur
 $container = $app->getContainer();
 
 $container['db'] = function($container) {
@@ -21,7 +25,7 @@ $container['db'] = function($container) {
     );
 
     if ($db->connect_error) {
-        die('Connection failed: ' . $db->connect_error);
+        die('La connexion a échoué : ' . $db->connect_error);
     }
     return $db;
 };
@@ -36,7 +40,7 @@ $app->post('/upload', function (Request $request, Response $response, $args) use
     $id_galerie = $data['id_galerie'] ?? null;
 
     if (!$id_utilisateur || !$id_galerie || !$photo) {
-        return $response->withStatus(400)->write('Missing required fields');
+        return $response->withStatus(400)->getBody()->write('Missing required fields');
     }
 
     $photo_data = file_get_contents($photo->getStream()->getMetadata('uri'));
@@ -47,9 +51,9 @@ $app->post('/upload', function (Request $request, Response $response, $args) use
     $stmt->bind_param('iis', $id_utilisateur, $id_galerie, $photo_data);
 
     if ($stmt->execute()) {
-        return $response->withStatus(200)->write('Photo uploaded successfully');
+        return $response->withStatus(200)->getBody()->write('Photo uploaded successfully');
     } else {
-        return $response->withStatus(500)->write('Failed to upload photo');
+        return $response->withStatus(500)->getBody()->write('Failed to upload photo');
     }
 });
 
@@ -60,7 +64,7 @@ $app->post('/login', function (Request $request, Response $response, $args) use 
     $password = $data['password'] ?? null;
 
     if (!$name || !$password) {
-        return $response->withStatus(400)->write('Name and password are required');
+        return $response->withStatus(400)->getBody()->write('Name and password are required');
     }
 
     $db = $container->get('db');
@@ -75,12 +79,17 @@ $app->post('/login', function (Request $request, Response $response, $args) use 
         $storedPassword = $row['password'];
 
         if (password_verify($password, $storedPassword)) {
-            return $response->withJson(['id_utilisateur' => $row['id_utilisateur']], 200);
+            // Créer une nouvelle réponse JSON avec ResponseFactory
+            $responseFactory = new ResponseFactory();
+            $jsonResponse = $responseFactory->createResponse();
+            $jsonResponse->getBody()->write(json_encode(['id_utilisateur' => $row['id_utilisateur']]));
+
+            return $jsonResponse->withStatus(200)->withHeader('Content-Type', 'application/json');
         } else {
-            return $response->withStatus(401)->write('Incorrect Name or password');
+            return $response->withStatus(401)->getBody()->write('Incorrect Name or password');
         }
     } else {
-        return $response->withStatus(401)->write('Incorrect Name or password');
+        return $response->withStatus(401)->getBody()->write('Incorrect Name or password');
     }
 });
 
