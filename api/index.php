@@ -14,11 +14,12 @@ $container = $app->getContainer();
 
 $container['db'] = function($container) {
     $db = new mysqli(
-        $container->get('MYSQL_HOST'), 
-        $container->get('MYSQL_USER'), 
-        $container->get('MYSQL_PASSWORD'), 
-        $container->get('MYSQL_DATABASE')
+        'database', 
+        'paugetc', 
+        'Capa1677', 
+        'BIBYdex'
     );
+
     if ($db->connect_error) {
         die('Connection failed: ' . $db->connect_error);
     }
@@ -38,7 +39,7 @@ $app->post('/upload', function (Request $request, Response $response, $args) use
         return $response->withStatus(400)->write('Missing required fields');
     }
 
-    $photo_data = file_get_contents($photo->getFilePath());
+    $photo_data = file_get_contents($photo->getStream()->getMetadata('uri'));
 
     $db = $container->get('db');
 
