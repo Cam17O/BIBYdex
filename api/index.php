@@ -4,14 +4,18 @@ require 'vendor/autoload.php';
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
+use Slim\Exception\HttpBadRequestException;
+use Slim\Psr7\UploadedFile;
 
 $app = AppFactory::create();
 
-// Middleware pour parser le corps des requêtes en JSON
+// Middleware for parsing the request body
 $app->addBodyParsingMiddleware();
 
+// Dependency injection container
 $container = $app->getContainer();
 
+// Database connection
 $container['db'] = function() {
     $db = new mysqli('database', 'paugetc', 'Capa1677', 'BIBYdex');
     if ($db->connect_error) {
@@ -20,7 +24,7 @@ $container['db'] = function() {
     return $db;
 };
 
-// Route pour télécharger une photo
+// Route to upload a photo
 $app->post('/upload', function (Request $request, Response $response, $args) {
     $data = $request->getParsedBody();
     $uploadedFiles = $request->getUploadedFiles();
@@ -30,10 +34,11 @@ $app->post('/upload', function (Request $request, Response $response, $args) {
     $id_galerie = $data['id_galerie'] ?? null;
 
     if (!$id_utilisateur || !$id_galerie || !$photo) {
-        return $response->withStatus(400)->write('Missing required fields');
+        $response->getBody()->write(json_encode(['error' => 'Missing required fields']));
+        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
     }
 
-    $photo_data = file_get_contents($photo->getFilePath());
+    $photo_data = $photo->getStream()->getContents();
 
     $db = $this->get('db');
 
@@ -41,23 +46,23 @@ $app->post('/upload', function (Request $request, Response $response, $args) {
     $stmt->bind_param('iis', $id_utilisateur, $id_galerie, $photo_data);
 
     if ($stmt->execute()) {
-        return $response->withStatus(200)->write('Photo uploaded successfully');
+        $response->getBody()->write(json_encode(['message' => 'Photo uploaded successfully']));
+        return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
     } else {
-        return $response->withStatus(500)->write('Failed to upload photo');
+        $response->getBody()->write(json_encode(['error' => 'Failed to upload photo']));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
     }
 });
 
-$app->run();
-
-
-// Route pour vérifier le nom d'utilisateur et le mot de passe
+// Route to verify username and password
 $app->post('/login', function (Request $request, Response $response, $args) {
     $data = $request->getParsedBody();
     $name = $data['Name'] ?? null;
     $password = $data['password'] ?? null;
 
     if (!$name || !$password) {
-        return $response->withStatus(400)->write('Name and password are required');
+        $response->getBody()->write(json_encode(['error' => 'Name and password are required']));
+        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
     }
 
     $db = $this->get('db');
@@ -72,16 +77,16 @@ $app->post('/login', function (Request $request, Response $response, $args) {
         $storedPassword = $row['password'];
         
         if (password_verify($password, $storedPassword)) {
-            return $response->withJson(['id_utilisateur' => $row['id_utilisateur']], 200);
+            $response->getBody()->write(json_encode(['id_utilisateur' => $row['id_utilisateur']]));
+            return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
         } else {
-            return $response->withStatus(401)->write('Incorrect Name or password');
+            $response->getBody()->write(json_encode(['error' => 'Incorrect Name or password']));
+            return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
         }
     } else {
-        return $response->withStatus(401)->write('Incorrect Name or password');
+        $response->getBody()->write(json_encode(['error' => 'Incorrect Name or password']));
+        return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
     }
 });
-
-
-
 
 $app->run();

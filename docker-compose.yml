@@ -13,10 +13,10 @@ services:
     depends_on:
       - database
     environment:
-      - MYSQL_HOST=database
-      - MYSQL_USER=paugetc
-      - MYSQL_PASSWORD=Capa1677
-      - MYSQL_DATABASE=BIBYdex
+      MYSQL_HOST: database
+      MYSQL_USER: paugetc
+      MYSQL_PASSWORD: Capa1677
+      MYSQL_DATABASE: BIBYdex
     restart: always
 
   database:
@@ -26,12 +26,15 @@ services:
       MYSQL_DATABASE: BIBYdex
       MYSQL_USER: paugetc
       MYSQL_PASSWORD: Capa1677
+    volumes:
+      - db_data:/var/lib/mysql
     restart: always
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
       PMA_HOST: database
+      PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: Capa1677
     ports:
       - "8181:80"
@@ -51,8 +54,11 @@ services:
     depends_on:
       - database
     environment:
-      - MYSQL_HOST=database
-      - MYSQL_USER=paugetc
-      - MYSQL_PASSWORD=Capa1677
-      - MYSQL_DATABASE=BIBYdex
+      MYSQL_HOST: database
+      MYSQL_USER: paugetc
+      MYSQL_PASSWORD: Capa1677
+      MYSQL_DATABASE: BIBYdex
     restart: always
+
+volumes:
+  db_data:

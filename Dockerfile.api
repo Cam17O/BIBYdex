@@ -1,33 +1,20 @@
-FROM php:7.4-apache
+FROM php:7.4-cli
 
-# Install necessary extensions
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mysqli pdo pdo_mysql
+# Install necessary PHP extensions
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Copy API source code
+COPY ./api /var/www/html/
+
+# Copy custom php.ini settings
+COPY ./php/php.ini /usr/local/etc/php/conf.d/
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Install API dependencies
 WORKDIR /var/www/html
-
-# Copy application source
-COPY . .
-
-# Install PHP dependencies
 RUN composer install
 
-# Expose port 80
-EXPOSE 80
-
-# Start Apache server
-CMD ["apache2-foreground"]
+# Set the command to run your API using PHP's built-in server
+CMD ["php", "-S", "0.0.0.0:3000", "-t", "/var/www/html"]
