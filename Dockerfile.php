@@ -1,28 +1,17 @@
-# Utiliser une image PHP avec Apache
+# Use an image with PHP 7.4 and Apache
 FROM php:7.4-apache
 
-# Installation de l'extension PDO MySQL
+# Install the PDO MySQL extension
 RUN docker-php-ext-install pdo_mysql
 
-# Installation de bcrypt
-RUN apt-get update && apt-get install -y \
-    libicu-dev \
-    && docker-php-ext-install intl \
-    && docker-php-ext-install bcmath \
-    && docker-php-ext-install opcache \
-    && docker-php-ext-install pcntl \
-    && docker-php-ext-install pdo_mysql \
-    && pecl install bcrypt \
-    && docker-php-ext-enable bcrypt
-
-# Créer un répertoire de travail dans l'image
+# Set the working directory
 WORKDIR /var/www/html
 
-# Copier les fichiers PHP de votre application dans l'image
+# Copy the application files into the container
 COPY . .
 
-# Exposer le port sur lequel le serveur Apache écoute
+# Expose the port the Apache server is listening on
 EXPOSE 80
 
-# Commande pour démarrer le serveur Apache
+# Command to run the Apache server
 CMD ["apache2-foreground"]

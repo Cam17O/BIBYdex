@@ -1,20 +1,20 @@
-# Utiliser une image Node.js
+# Use a Node.js image
 FROM node:14
 
-# Créer un répertoire de travail dans l'image
+# Create and set the working directory
 WORKDIR /app
 
-# Copier les fichiers package.json et package-lock.json dans le répertoire de travail
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Installer les dépendances
+# Install the dependencies
 RUN npm install
 
-# Copier le reste des fichiers de l'application dans le répertoire de travail
+# Copy the rest of the application files
 COPY . .
 
-# Exposer le port sur lequel l'application s'exécute
+# Expose the port the application is listening on
 EXPOSE 3000
 
-# Commande pour démarrer l'application
+# Command to run the application
 CMD ["node", "app.js"]

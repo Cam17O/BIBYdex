@@ -48,39 +48,26 @@ app.post('/upload', upload.single('photo'), (req, res) => {
     });
 });
 
-// Route pour vérifier le pseudo et le mot de passe
+// Route pour vérifier le nom d'utilisateur et le mot de passe
 app.post('/login', (req, res) => {
-    const { name, password } = req.body;
+    const { Name, password } = req.body;
 
-    // Retrieve the user from the database
-    const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
-    db.query(query, [name], (err, results) => {
+    if (!Name || !password) {
+        return res.status(400).send('Name and password are required');
+    }
+
+    const query = 'SELECT id_utilisateur FROM Utilisateur WHERE Name = ? AND password = ?';
+    db.query(query, [Name, password], (err, results) => {
         if (err) {
-            console.error('Error fetching user:', err);
-            return res.status(500).send('Server error');
+            console.error(err);
+            return res.status(500).send('Failed to query the database');
         }
 
-        if (results.length === 0) {
-            return res.status(401).send('Incorrect pseudo or password');
+        if (results.length > 0) {
+            res.status(200).json({ id_utilisateur: results[0].id_utilisateur });
+        } else {
+            res.status(401).send('Incorrect Name or password');
         }
-
-        const user = results[0];
-
-        // Verify the password
-        bcrypt.compare(password, user.password, (err, result) => {
-            if (err) {
-                console.error('Error verifying password:', err);
-                return res.status(500).send('Server error');
-            }
-
-            if (result) {
-                // Password is correct, send user ID
-                res.status(200).json({ id_utilisateur: user.id_utilisateur });
-            } else {
-                // Password is incorrect
-                res.status(401).send('Incorrect pseudo or password');
-            }
-        });
     });
 });
 
