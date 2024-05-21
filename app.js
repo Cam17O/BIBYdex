@@ -68,27 +68,28 @@ app.post('/login', (req, res) => {
             const user = results[0];
             console.log('Retrieved user from database:', user);
 
-            // Affiche le mot de passe stocké dans la base de données
-            console.log('Password from database:', user.password);
+            // Comparaison asynchrone des mots de passe hachés
+            bcrypt.compare(password, user.password, (err, passwordMatch) => {
+                if (err) {
+                    console.error('Error comparing passwords:', err);
+                    return res.status(500).send('Failed to compare passwords');
+                }
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            // Affiche le mot de passe envoyé par l'utilisateur
-            console.log('Password sent by user:', password);
-
-            if (passwordMatch) {
-                console.log(`User ${Name} logged in successfully`);
-                res.status(200).json({ id_utilisateur: user.id_utilisateur });
-            } else {
-                console.log(`Incorrect password for user ${Name}`);
-                res.status(401).send('Incorrect Name or password');
-            }
+                if (passwordMatch) {
+                    console.log(`User ${Name} logged in successfully`);
+                    res.status(200).json({ id_utilisateur: user.id_utilisateur });
+                } else {
+                    console.log(`Incorrect password for user ${Name}`);
+                    res.status(401).send('Incorrect Name or password');
+                }
+            });
         } else {
             console.log(`User ${Name} not found`);
-            res.status(401).send('Incorrect Name or password');
+            res.status(401).send('Incorrect Name');
         }
     });
 });
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
