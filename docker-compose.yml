@@ -4,7 +4,7 @@ services:
   webserver:
     build:
       context: .
-      dockerfile: Dockerfile.php
+      dockerfile: Dockerfile.web
     ports:
       - "8080:80"
     volumes:
@@ -39,13 +39,20 @@ services:
       - database
     restart: always
 
-  nodejs:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile.nodejs
+      dockerfile: Dockerfile.api
     ports:
       - "3000:3000"
+    volumes:
+      - ./api:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/conf.d/php.ini
     depends_on:
-      - webserver
       - database
+    environment:
+      - MYSQL_HOST=database
+      - MYSQL_USER=paugetc
+      - MYSQL_PASSWORD=Capa1677
+      - MYSQL_DATABASE=BIBYdex
     restart: always
