@@ -60,7 +60,7 @@ app.post('/login', (req, res) => {
     const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
     db.query(query, [Name], async (err, results) => {
         if (err) {
-            console.error(err);
+            console.error('Error querying the database:', err);
             return res.status(500).send('Failed to query the database');
         }
 
@@ -68,11 +68,14 @@ app.post('/login', (req, res) => {
             const user = results[0];
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (passwordMatch) {
+                console.log(`User ${Name} logged in successfully`);
                 res.status(200).json({ id_utilisateur: user.id_utilisateur });
             } else {
+                console.log(`Incorrect password for user ${Name}`);
                 res.status(401).send('Incorrect Name or password');
             }
         } else {
+            console.log(`User ${Name} not found`);
             res.status(401).send('Incorrect Name or password');
         }
     });
