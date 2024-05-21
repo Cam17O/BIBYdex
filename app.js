@@ -48,6 +48,42 @@ app.post('/upload', upload.single('photo'), (req, res) => {
     });
 });
 
+// Route pour vérifier le pseudo et le mot de passe
+app.post('/login', (req, res) => {
+    const { name, password } = req.body;
+
+    // Retrieve the user from the database
+    const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
+    db.query(query, [name], (err, results) => {
+        if (err) {
+            console.error('Error fetching user:', err);
+            return res.status(500).send('Server error');
+        }
+
+        if (results.length === 0) {
+            return res.status(401).send('Incorrect pseudo or password');
+        }
+
+        const user = results[0];
+
+        // Verify the password
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (err) {
+                console.error('Error verifying password:', err);
+                return res.status(500).send('Server error');
+            }
+
+            if (result) {
+                // Password is correct, send user ID
+                res.status(200).json({ id_utilisateur: user.id_utilisateur });
+            } else {
+                // Password is incorrect
+                res.status(401).send('Incorrect pseudo or password');
+            }
+        });
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
