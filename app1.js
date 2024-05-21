@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
 const app = express();
 const port = 3000;
 
@@ -56,16 +57,29 @@ app.post('/login', (req, res) => {
         return res.status(400).send('Name and password are required');
     }
 
-    const query = 'SELECT id_utilisateur FROM Utilisateur WHERE Name = ? AND password = ?';
-    db.query(query, [Name, password], (err, results) => {
+    const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
+    db.query(query, [Name], async (err, results) => {
         if (err) {
-            console.error(err);
+            console.error('Error querying the database:', err);
             return res.status(500).send('Failed to query the database');
         }
 
         if (results.length > 0) {
-            res.status(200).json({ id_utilisateur: results[0].id_utilisateur });
+            const user = results[0];
+            console.log('Retrieved user from database:', user);
+
+            // Affiche le mot de passe stocké dans la base de données
+            console.log('Password from database:', user.password);
+
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (passwordMatch) {
+                res.status(200).json({ id_utilisateur: user.id_utilisateur });
+            } else {
+                console.log('Incorrect password for user', Name);
+                res.status(401).send('Incorrect Name or password');
+            }
         } else {
+            console.log('User not found:', Name);
             res.status(401).send('Incorrect Name or password');
         }
     });
