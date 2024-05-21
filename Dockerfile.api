@@ -16,6 +16,9 @@ COPY ./php/php.ini /usr/local/etc/php/conf.d/
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Verify Composer installation
+RUN composer --version
+
 # Create a non-root user and set permissions
 RUN useradd -ms /bin/bash composeruser && \
     chown -R composeruser:composeruser /var/www/html
@@ -27,7 +30,7 @@ USER composeruser
 WORKDIR /var/www/html
 
 # Install API dependencies
-RUN composer install
+RUN composer install --no-scripts --no-interaction --prefer-dist
 
 # Switch back to root to use the default CMD
 USER root

@@ -49,7 +49,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./api:/var/www/html
+      - n:/var/www/html
       - ./php/php.ini:/usr/local/etc/php/conf.d/php.ini
     depends_on:
       - database
