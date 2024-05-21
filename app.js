@@ -57,36 +57,47 @@ app.post('/login', (req, res) => {
         return res.status(400).send('Name and password are required');
     }
 
-    const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
-    db.query(query, [Name], async (err, results) => {
+    // Hachage du mot de passe
+    bcrypt.hash(password, 10, async (err, hashedPassword) => {
         if (err) {
-            console.error('Error querying the database:', err);
-            return res.status(500).send('Failed to query the database');
+            console.error('Error hashing password:', err);
+            return res.status(500).send('Failed to hash password');
         }
 
-        if (results.length > 0) {
-            const user = results[0];
-            console.log('Retrieved user from database:', user);
+        // Affiche le mot de passe envoyé par l'utilisateur après cryptage
+        console.log('Password sent by user (after hashing):', hashedPassword);
 
-            // Comparaison asynchrone des mots de passe hachés
-            bcrypt.compare(password, user.password, (err, passwordMatch) => {
-                if (err) {
-                    console.error('Error comparing passwords:', err);
-                    return res.status(500).send('Failed to compare passwords');
-                }
+        const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
+        db.query(query, [Name], async (err, results) => {
+            if (err) {
+                console.error('Error querying the database:', err);
+                return res.status(500).send('Failed to query the database');
+            }
 
-                if (passwordMatch) {
-                    console.log(`User ${Name} logged in successfully`);
-                    res.status(200).json({ id_utilisateur: user.id_utilisateur });
-                } else {
-                    console.log(`Incorrect password for user ${Name}`);
-                    res.status(401).send('Incorrect Name or password');
-                }
-            });
-        } else {
-            console.log(`User ${Name} not found`);
-            res.status(401).send('Incorrect Name');
-        }
+            if (results.length > 0) {
+                const user = results[0];
+                console.log('Retrieved user from database:', user);
+
+                // Comparaison asynchrone des mots de passe hachés
+                bcrypt.compare(password, user.password, (err, passwordMatch) => {
+                    if (err) {
+                        console.error('Error comparing passwords:', err);
+                        return res.status(500).send('Failed to compare passwords');
+                    }
+
+                    if (passwordMatch) {
+                        console.log(`User ${Name} logged in successfully`);
+                        res.status(200).json({ id_utilisateur: user.id_utilisateur });
+                    } else {
+                        console.log(`Incorrect password for user ${Name}`);
+                        res.status(401).send('Incorrect Name or password');
+                    }
+                });
+            } else {
+                console.log(`User ${Name} not found`);
+                res.status(401).send('Incorrect Name or password');
+            }
+        });
     });
 });
 
