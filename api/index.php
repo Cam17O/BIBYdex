@@ -12,8 +12,13 @@ $app->addBodyParsingMiddleware();
 
 $container = $app->getContainer();
 
-$container['db'] = function() {
-    $db = new mysqli(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
+$container['db'] = function($container) {
+    $db = new mysqli(
+        $container->get('MYSQL_HOST'), 
+        $container->get('MYSQL_USER'), 
+        $container->get('MYSQL_PASSWORD'), 
+        $container->get('MYSQL_DATABASE')
+    );
     if ($db->connect_error) {
         die('Connection failed: ' . $db->connect_error);
     }
@@ -21,7 +26,7 @@ $container['db'] = function() {
 };
 
 // Route to upload a photo
-$app->post('/upload', function (Request $request, Response $response, $args) {
+$app->post('/upload', function (Request $request, Response $response, $args) use ($container) {
     $data = $request->getParsedBody();
     $uploadedFiles = $request->getUploadedFiles();
     $photo = $uploadedFiles['photo'] ?? null;
@@ -35,7 +40,7 @@ $app->post('/upload', function (Request $request, Response $response, $args) {
 
     $photo_data = file_get_contents($photo->getFilePath());
 
-    $db = $this->get('db');
+    $db = $container->get('db');
 
     $stmt = $db->prepare('INSERT INTO Photo (id_utilisateur, id_galerie, photo_data) VALUES (?, ?, ?)');
     $stmt->bind_param('iis', $id_utilisateur, $id_galerie, $photo_data);
@@ -48,7 +53,7 @@ $app->post('/upload', function (Request $request, Response $response, $args) {
 });
 
 // Route to check username and password
-$app->post('/login', function (Request $request, Response $response, $args) {
+$app->post('/login', function (Request $request, Response $response, $args) use ($container) {
     $data = $request->getParsedBody();
     $name = $data['Name'] ?? null;
     $password = $data['password'] ?? null;
@@ -57,7 +62,7 @@ $app->post('/login', function (Request $request, Response $response, $args) {
         return $response->withStatus(400)->write('Name and password are required');
     }
 
-    $db = $this->get('db');
+    $db = $container->get('db');
 
     $stmt = $db->prepare('SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?');
     $stmt->bind_param('s', $name);
