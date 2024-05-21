@@ -66,7 +66,16 @@ app.post('/login', (req, res) => {
 
         if (results.length > 0) {
             const user = results[0];
+            console.log('Retrieved user from database:', user);
+
+            // Affiche le mot de passe stocké dans la base de données
+            console.log('Password from database:', user.password);
+
             const passwordMatch = await bcrypt.compare(password, user.password);
+
+            // Affiche le mot de passe envoyé par l'utilisateur
+            console.log('Password sent by user:', password);
+
             if (passwordMatch) {
                 console.log(`User ${Name} logged in successfully`);
                 res.status(200).json({ id_utilisateur: user.id_utilisateur });
@@ -80,7 +89,6 @@ app.post('/login', (req, res) => {
         }
     });
 });
-
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
