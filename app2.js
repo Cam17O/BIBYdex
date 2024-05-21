@@ -2,7 +2,6 @@ const express = require('express');
 const multer = require('multer');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
 const app = express();
 const port = 3000;
 
@@ -49,32 +48,39 @@ app.post('/upload', upload.single('photo'), (req, res) => {
     });
 });
 
-// Route pour vérifier le nom d'utilisateur et le mot de passe
+// Route pour vérifier le pseudo et le mot de passe
 app.post('/login', (req, res) => {
-    const { Name, password } = req.body;
+    const { name, password } = req.body;
 
-    if (!Name || !password) {
-        return res.status(400).send('Name and password are required');
-    }
-
+    // Retrieve the user from the database
     const query = 'SELECT id_utilisateur, password FROM Utilisateur WHERE Name = ?';
-    db.query(query, [Name], async (err, results) => {
+    db.query(query, [name], (err, results) => {
         if (err) {
-            console.error(err);
-            return res.status(500).send('Failed to query the database');
+            console.error('Error fetching user:', err);
+            return res.status(500).send('Server error');
         }
 
-        if (results.length > 0) {
-            const user = results[0];
-            const passwordMatch = await bcrypt.compare(password, user.password);
-            if (passwordMatch) {
+        if (results.length === 0) {
+            return res.status(401).send('Incorrect pseudo or password');
+        }
+
+        const user = results[0];
+
+        // Verify the password
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (err) {
+                console.error('Error verifying password:', err);
+                return res.status(500).send('Server error');
+            }
+
+            if (result) {
+                // Password is correct, send user ID
                 res.status(200).json({ id_utilisateur: user.id_utilisateur });
             } else {
-                res.status(401).send('Incorrect Name or password');
+                // Password is incorrect
+                res.status(401).send('Incorrect pseudo or password');
             }
-        } else {
-            res.status(401).send('Incorrect Name or password');
-        }
+        });
     });
 });
 
