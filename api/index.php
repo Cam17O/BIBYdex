@@ -101,7 +101,7 @@ $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Re
     $db = $this->get('db');
 
     // SQL query to select photos for a user (modify to select specific columns)
-    $sql = 'SELECT id, name, mime_type FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjusted columns
+    $sql = 'SELECT photo_data FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjusted columns
 
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id_utilisateur', $idUtilisateur, PDO::PARAM_INT);
