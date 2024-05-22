@@ -123,25 +123,19 @@ $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Re
 
     $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Clean photo_data
-    foreach ($photos as &$photo) {
-        $photo['photo_data'] = cleanString($photo['photo_data']);
-    }
+    // Check if photos were found
+    if ($photos) {
+        // Encode images to Base64
+        foreach ($photos as &$photo) {
+            $photo['photo_data'] = base64_encode($photo['photo_data']);
+        }
 
-    // Encode data to JSON with UTF-8 handling
-    $jsonData = json_encode($photos, JSON_UNESCAPED_UNICODE);
-
-    // Check if json_encode was successful
-    if ($jsonData === false) {
-        $response = $response->withStatus(500);
-        $response->getBody()->write('Erreur lors de l\'encodage JSON.');
-
-        // Log the JSON encoding error
-        error_log('JSON Encoding Error: ' . json_last_error_msg());
-    } else {
         // Set response as JSON with proper encoding
         $response = $response->withHeader('Content-Type', 'application/json');
-        $response->getBody()->write($jsonData);
+        $response->getBody()->write(json_encode($photos));
+    } else {
+        $response = $response->withStatus(404);
+        $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
     }
 
     return $response;
