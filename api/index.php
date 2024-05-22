@@ -94,30 +94,41 @@ $app->post('/login', function (Request $request, Response $response) {
     }
 });
 
-// Route pour obtenir toutes les photos d'un utilisateur
 $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Response $response, $args) {
     $idUtilisateur = $args['idUtilisateur'];
-
-    // Récupérer la connexion à la base de données depuis le conteneur
+  
+    // Retrieve database connection from the container
     $db = $this->get('db');
-
-    // Requête SQL pour sélectionner toutes les photos d'un utilisateur
-    $sql = 'SELECT * FROM Photo WHERE id_utilisateur = :id_utilisateur';
+  
+    // SQL query to select photos for a user (modify to select specific columns)
+    $sql = 'SELECT photo_data, content_type  FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id_utilisateur', $idUtilisateur);
     $stmt->execute();
-    $photos = $stmt->fetchAll();
-
-    // Vérifier si des photos ont été trouvées
+  
+    $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Fetch associative array
+  
+    // Check if photos were found
     if ($photos) {
-        // Convertir le résultat en JSON et l'envoyer en réponse
-        $response->getBody()->write(json_encode($photos));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+      $count = count($photos);
+      if ($count === 1) {
+        // Single photo, set content type and output directly
+        $response->withHeader('Content-Type', $photos[0]['content_type']);
+        $response->getBody()->write($photos[0]['photo_data']);  // Assuming photo data is a binary blob
+      } else {
+        // Multiple photos, not ideal to send directly. Consider alternatives:
+        // 1. Return a ZIP archive containing all photos
+        // 2. Implement pagination or limit results
+        $response->withStatus(400);  // Bad Request - Multiple photos, needs alternative approach
+        $response->getBody()->write(json_encode(['message' => 'Plusieurs photos trouvées. Retourner un seul fichier archive est conseillé.']));  // Explain limitation (French)
+      }
     } else {
-        // Aucune photo trouvée pour l'utilisateur
-        $response->getBody()->write(json_encode(['message' => 'Aucune photo trouvée pour cet utilisateur']));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+      // No photos found for the user
+      $response->withStatus(404);
+      $response->getBody()->write(json_encode(['message' => 'Aucune photo trouvée pour cet utilisateur']));
     }
-});
+  
+    return $response;
+  });
 
 $app->run();
