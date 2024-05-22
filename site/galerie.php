@@ -30,6 +30,15 @@ $stmt->execute(['email' => $identifiant]);
 $user = $stmt->fetch();
 $id_utilisateur = $user['id_utilisateur'];
 
+// Traitement de la suppression de photo
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_photo'])) {
+    $id_photo = $_POST['photo_id'];
+    $stmt = $pdo->prepare("DELETE FROM Photo WHERE id_photo = :id_photo AND id_utilisateur = :id_utilisateur");
+    $stmt->execute(['id_photo' => $id_photo, 'id_utilisateur' => $id_utilisateur]);
+    header("Location: galerie.php"); // Rediriger vers la galerie après la suppression
+    exit;
+}
+
 // Récupérer les photos de l'utilisateur
 $stmt = $pdo->prepare("SELECT id_photo, photo_data FROM Photo WHERE id_utilisateur = :id_utilisateur");
 $stmt->execute(['id_utilisateur' => $id_utilisateur]);
@@ -90,7 +99,10 @@ $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($photos as $photo): ?>
                 <div class="photo">
                     <img src="data:image/jpeg;base64,<?php echo base64_encode($photo['photo_data']); ?>" alt="Photo" class="img-fluid">
-                    <button class="delete-btn" data-id="<?php echo $photo['id_photo']; ?>">Supprimer</button>
+                    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" class="delete-form">
+                        <input type="hidden" name="photo_id" value="<?php echo $photo['id_photo']; ?>">
+                        <button type="submit" name="delete_photo" class="delete-btn">Supprimer</button>
+                    </form>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -99,31 +111,6 @@ $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.delete-btn').click(function() {
-                var photoId = $(this).data('id');
-                var photoDiv = $(this).closest('.photo');
-
-                $.ajax({
-                    url: 'delete_photo.php',
-                    type: 'POST',
-                    data: { id_photo: photoId },
-                    success: function(response) {
-                        var res = JSON.parse(response);
-                        if (res.status === 'success') {
-                            photoDiv.remove();
-                        } else {
-                            alert(res.message);
-                        }
-                    },
-                    error: function() {
-                        alert('Erreur lors de la suppression de la photo.');
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 
 </html>
