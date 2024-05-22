@@ -1,5 +1,19 @@
 <?php
 
+// Function to clean non-UTF-8 characters from a string
+function cleanString($str)
+{
+    return preg_replace(
+        '/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]' .
+            '|[\x00-\x7F][\x80-\xBF]+' .
+            '|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*' .
+            '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})' .
+            '|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
+        '',
+        $str
+    );
+}
+
 require __DIR__ . '/vendor/autoload.php';
 
 use Psr\Http\Message\ResponseInterface as Response;
@@ -109,26 +123,25 @@ $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Re
 
     $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Check if photos were found
-    if ($photos) {
-        // Encode data to JSON with UTF-8 handling
-        $jsonData = json_encode($photos, JSON_UNESCAPED_UNICODE);
+    // Clean photo_data
+    foreach ($photos as &$photo) {
+        $photo['photo_data'] = cleanString($photo['photo_data']);
+    }
 
-        // Check if json_encode was successful
-        if ($jsonData === false) {
-            $response = $response->withStatus(500);
-            $response->getBody()->write('Erreur lors de l\'encodage JSON.');
+    // Encode data to JSON with UTF-8 handling
+    $jsonData = json_encode($photos, JSON_UNESCAPED_UNICODE);
 
-            // Log the JSON encoding error
-            error_log('JSON Encoding Error: ' . json_last_error_msg());
-        } else {
-            // Set response as JSON with proper encoding
-            $response = $response->withHeader('Content-Type', 'application/json');
-            $response->getBody()->write($jsonData);
-        }
+    // Check if json_encode was successful
+    if ($jsonData === false) {
+        $response = $response->withStatus(500);
+        $response->getBody()->write('Erreur lors de l\'encodage JSON.');
+
+        // Log the JSON encoding error
+        error_log('JSON Encoding Error: ' . json_last_error_msg());
     } else {
-        $response = $response->withStatus(404);
-        $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
+        // Set response as JSON with proper encoding
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write($jsonData);
     }
 
     return $response;
