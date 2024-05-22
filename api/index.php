@@ -94,41 +94,49 @@ $app->post('/login', function (Request $request, Response $response) {
     }
 });
 
+
+function createZipArchive($photos)
+{
+    $zip = new ZipArchive();
+    $zip->open('php://temp', ZipArchive::CREATE);  // Create in memory
+
+    foreach ($photos as $photo) {
+        $zip->addFromString($photo['name'], $photo['photo_data']);
+    }
+
+    $zip->close();
+    return $zip;
+}
+
 $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Response $response, $args) {
     $idUtilisateur = $args['idUtilisateur'];
-  
+
     // Retrieve database connection from the container
     $db = $this->get('db');
-  
+
     // SQL query to select photos for a user (modify to select specific columns)
-    $sql = 'SELECT photo_data FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
+    $sql = 'SELECT photo_data, name FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id_utilisateur', $idUtilisateur);
     $stmt->execute();
-  
-    $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Fetch associative array
-  
+
+    $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     // Check if photos were found
     if ($photos) {
-      $count = count($photos);
-      if ($count === 1) {
-        // Single photo, set content type and output directly
-        $response->withHeader('Content-Type', $photos[0]['content_type']);
-        $response->getBody()->write($photos[0]['photo_data']);  // Assuming photo data is a binary blob
-      } else {
-        // Multiple photos, not ideal to send directly. Consider alternatives:
-        // 1. Return a ZIP archive containing all photos
-        // 2. Implement pagination or limit results
-        $response->withStatus(400);  // Bad Request - Multiple photos, needs alternative approach
-        $response->getBody()->write(json_encode(['message' => 'Plusieurs photos trouvées. Retourner un seul fichier archive est conseillé.']));  // Explain limitation (French)
-      }
+        // Send photos without zipping
+        foreach ($photos as $photo) {
+            $response->withHeader('Content-Type', 'image/' . $photo['mime_type']);  // Set appropriate content type
+            $response->withHeader('Content-Disposition', 'inline; filename="' . $photo['name'] . '"');  // Inline display
+            $response->getBody()->write($photo['photo_data']);  // Send photo data
+        }
     } else {
-      // No photos found for the user
-      $response->withStatus(404);
-      $response->getBody()->write(json_encode(['message' => 'Aucune photo trouvée pour cet utilisateur']));
+        // Handle no photos case
+        $response = $response->withStatus(404);
+        $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
     }
-  
+
     return $response;
-  });
+});
 
 $app->run();
