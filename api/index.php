@@ -94,49 +94,30 @@ $app->post('/login', function (Request $request, Response $response) {
     }
 });
 
-
-function createZipArchive($photos)
-{
-    $zip = new ZipArchive();
-    $zip->open('php://temp', ZipArchive::CREATE);  // Create in memory
-
-    foreach ($photos as $photo) {
-        $zip->addFromString($photo['name'], $photo['photo_data']);
-    }
-
-    $zip->close();
-    return $zip;
-}
-
 $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Response $response, $args) {
     $idUtilisateur = $args['idUtilisateur'];
-
+  
     // Retrieve database connection from the container
     $db = $this->get('db');
-
+  
     // SQL query to select photos for a user (modify to select specific columns)
     $sql = 'SELECT photo_data FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id_utilisateur', $idUtilisateur);
     $stmt->execute();
-
+  
     $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+  
     // Check if photos were found
     if ($photos) {
-        // Send photos without zipping
-        foreach ($photos as $photo) {
-            $response->withHeader('Content-Type', 'image/' . $photo['mime_type']);  // Set appropriate content type
-            $response->withHeader('Content-Disposition', 'inline; filename="' . $photo['name'] . '"');  // Inline display
-            $response->getBody()->write($photo['photo_data']);  // Send photo data
-        }
+      $response = $response->withJson($photos); // Set response as JSON with photos data
     } else {
-        // Handle no photos case
-        $response = $response->withStatus(404);
-        $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
+      $response = $response->withStatus(404);
+      $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
     }
-
+  
     return $response;
-});
+  });
+
 
 $app->run();
