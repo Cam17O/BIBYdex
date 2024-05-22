@@ -96,28 +96,34 @@ $app->post('/login', function (Request $request, Response $response) {
 
 $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Response $response, $args) {
     $idUtilisateur = $args['idUtilisateur'];
-  
+
     // Retrieve database connection from the container
     $db = $this->get('db');
-  
+
     // SQL query to select photos for a user (modify to select specific columns)
-    $sql = 'SELECT photo_data FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
+    $sql = 'SELECT id, name, mime_type FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjusted columns
+
     $stmt = $db->prepare($sql);
-    $stmt->bindParam(':id_utilisateur', $idUtilisateur);
+    $stmt->bindParam(':id_utilisateur', $idUtilisateur, PDO::PARAM_INT);
     $stmt->execute();
-  
+
     $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  
+
     // Check if photos were found
     if ($photos) {
-      $response = $response->withJson($photos); // Set response as JSON with photos data
+        // Encode data to JSON with UTF-8 handling
+        $jsonData = json_encode($photos, JSON_UNESCAPED_UNICODE);
+
+        // Set response as JSON with proper encoding
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write($jsonData);
     } else {
-      $response = $response->withStatus(404);
-      $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
+        $response = $response->withStatus(404);
+        $response->getBody()->write('Aucune photo trouvée pour l\'utilisateur ' . $idUtilisateur);
     }
-  
+
     return $response;
-  });
+});
 
 
 $app->run();
