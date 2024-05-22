@@ -118,6 +118,9 @@ $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Re
         if ($jsonData === false) {
             $response = $response->withStatus(500);
             $response->getBody()->write('Erreur lors de l\'encodage JSON.');
+
+            // Log the JSON encoding error
+            error_log('JSON Encoding Error: ' . json_last_error_msg());
         } else {
             // Set response as JSON with proper encoding
             $response = $response->withHeader('Content-Type', 'application/json');
