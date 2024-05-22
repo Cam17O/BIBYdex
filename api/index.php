@@ -94,4 +94,30 @@ $app->post('/login', function (Request $request, Response $response) {
     }
 });
 
+// Route pour obtenir toutes les photos d'un utilisateur
+$app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Response $response, $args) {
+    $idUtilisateur = $args['idUtilisateur'];
+
+    // Récupérer la connexion à la base de données depuis le conteneur
+    $db = $this->get('db');
+
+    // Requête SQL pour sélectionner toutes les photos d'un utilisateur
+    $sql = 'SELECT * FROM Photo WHERE id_utilisateur = :id_utilisateur';
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(':id_utilisateur', $idUtilisateur);
+    $stmt->execute();
+    $photos = $stmt->fetchAll();
+
+    // Vérifier si des photos ont été trouvées
+    if ($photos) {
+        // Convertir le résultat en JSON et l'envoyer en réponse
+        $response->getBody()->write(json_encode($photos));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } else {
+        // Aucune photo trouvée pour l'utilisateur
+        $response->getBody()->write(json_encode(['message' => 'Aucune photo trouvée pour cet utilisateur']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+    }
+});
+
 $app->run();
