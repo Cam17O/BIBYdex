@@ -115,7 +115,7 @@ $app->get('/utilisateurs/{idUtilisateur}/photos', function (Request $request, Re
     $db = $this->get('db');
 
     // SQL query to select photos for a user (modify to select specific columns)
-    $sql = 'SELECT photo_data, name FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
+    $sql = 'SELECT photo_data FROM Photo WHERE id_utilisateur = :id_utilisateur'; // Adjust columns as needed
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':id_utilisateur', $idUtilisateur);
     $stmt->execute();
