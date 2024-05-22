@@ -50,7 +50,7 @@
                     </br>
 
                     <!-- Boutton de validation du formulaire : active le script assets/scripts/CreateAccount.php -->
-                    <input type="submit" class="btn btn-primary" value="Se connecter">
+                    <input type="submit" class="btn btn-primary" value="Créer le compte">
 
                 </form>
 
