@@ -7,12 +7,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install mysqli pdo pdo_mysql \
     && docker-php-ext-enable pdo_mysql
 
-# Copy API source code
-COPY ./api /var/www/html/
-
-# Copy custom php.ini settings
-COPY ./php/php.ini /usr/local/etc/php/conf.d/
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -20,20 +14,22 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer --version
 
 # Create a non-root user and set permissions
-RUN useradd -ms /bin/bash composeruser && \
-    chown -R composeruser:composeruser /var/www/html
-
-# Switch to the non-root user
-USER composeruser
+RUN useradd -ms /bin/bash composeruser
 
 # Set the working directory
 WORKDIR /var/www/html
 
+# Copy API source code and set permissions
+COPY ./api /var/www/html/
+COPY ./php/php.ini /usr/local/etc/php/conf.d/
+RUN chown -R composeruser:composeruser /var/www/html
+
+# Switch to the non-root user
+USER composeruser
+
 # Install API dependencies
 RUN composer install --no-scripts --no-interaction --prefer-dist
-
-# Switch back to root to use the default CMD
-USER root
+RUN composer require php-di/php-di:^6.4.0
 
 # Set the command to run your API using PHP's built-in server
 CMD ["php", "-S", "0.0.0.0:3000", "-t", "/var/www/html"]
