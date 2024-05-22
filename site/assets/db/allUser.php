@@ -13,5 +13,6 @@ foreach ($users as $user) {
     echo "<th scope='row'>" . $user['id_utilisateur'] . "</td>";
     echo "<td>" . $user['email'] . "</td>";
     echo "<td>" . $user['Name'] . "</td>";
+    echo "<td><a href='galerie2.php?id=" . $user['id_utilisateur'] . "' class='btn btn-primary'>Voir la galerie</a></td>";
     echo "</tr>";
 }

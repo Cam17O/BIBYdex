@@ -32,6 +32,7 @@ if (!isset($_SESSION['identifiant'])) {
                 <th scope="col">id</th>
                 <th scope="col">Email</th>
                 <th scope="col">Nom</th>
+                <th scope="col">Voir la galerie</th>
             </tr>
         </thead>
         <tbody>
