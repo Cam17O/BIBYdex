@@ -33,7 +33,7 @@ if ($request) {
     $stmt->execute(['user1' => $connectedUserId, 'user2' => $friendId]);
 
     // Rediriger avec un message de succès
-    header("Location: user_list.php?message=request_sent");
+    header("Location: allUser.php?message=request_sent");
 }
 exit;
 ?>
