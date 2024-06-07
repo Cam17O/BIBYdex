@@ -32,5 +32,6 @@ li a:hover:not(.active) {
     <li><a href="index.php">Accueil</a></li>
     <li><a href="galerie.php">Ma galerie</a></li>
     <li><a href="allUser.php">Liste des utilisateurs</a></li>
+    <li><a href="friend_requests.php">Demande d'amis</a></li>
     <li style="float:right"><a class="active" href="logout.php">Déconnexion</a></li>
 </ul>

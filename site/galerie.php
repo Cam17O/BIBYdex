@@ -25,7 +25,7 @@ try {
 
 // Récupérer l'ID utilisateur
 $identifiant = $_SESSION['identifiant'];
-$stmt = $pdo->prepare("SELECT id_utilisateur FROM Utilisateur WHERE email = :email");
+$stmt = $pdo->prepare("SELECT id_utilisateur FROM Utilisateur WHERE Name = :email");
 $stmt->execute(['email' => $identifiant]);
 $user = $stmt->fetch();
 $id_utilisateur = $user['id_utilisateur'];
