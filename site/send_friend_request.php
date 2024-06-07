@@ -7,7 +7,7 @@ if (!isset($_SESSION['identifiant'])) {
     exit;
 }
 
-require("connexionDB.php");
+require("assets/db/connexionDB.php");
 
 $connectedUserName = $_SESSION['identifiant'];
 
